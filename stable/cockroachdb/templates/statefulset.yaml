@@ -174,7 +174,8 @@ spec:
                   ${STATEFULSET_NAME}-{{ $i }}.${STATEFULSET_FQDN}:{{ $.Values.service.ports.grpc.internal.port | int64 -}}
                 {{- end -}}
               {{- end }}
-              --advertise-host=$(hostname).${STATEFULSET_FQDN}
+              --advertise-addr=$(hostname).{{ template "cockroachdb.fullname" . }}.{{ .Release.Namespace }}.global
+              --locality-advertise-addr={{ .Values.conf.locality }}@$(hostname).${STATEFULSET_FQDN}
             {{- with index .Values.conf `cluster-name` }}
               --cluster-name={{ . }}
             {{- if index $.Values.conf `disable-cluster-name-verification` }}
@@ -212,7 +213,7 @@ spec:
             - name: STATEFULSET_FQDN
               value: {{ template "cockroachdb.fullname" . }}.{{ .Release.Namespace }}.svc.{{ .Values.clusterDomain }}
             - name: COCKROACH_CHANNEL
-              value: kubernetes-helm
+              value: kubernetes-multiregion
           {{- with .Values.statefulset.env }}
             {{- toYaml . | nindent 12 }}
           {{- end }}
